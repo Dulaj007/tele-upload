@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Two-tone signal palette. Cyan is the machine side of the flow, sodium amber is
+  the human side. The process map warms from one to the other as a file travels
+  from storage toward a person, so the colour carries the architecture rather
+  than decorating it.
+*/
+:root {
+  --void: #0a0e1a;
+  --panel: #121829;
+  --line: #1e2740;
+  --ice: #6be3f5;
+  --sodium: #ffb454;
+  --ink: #e4e9f5;
+  --muted: #7a879f;
+}
+
+html {
+  background: var(--void);
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(60rem 40rem at 12% -10%, rgba(107, 227, 245, 0.09), transparent 60%),
+    radial-gradient(50rem 34rem at 88% 8%, rgba(255, 180, 84, 0.07), transparent 62%),
+    var(--void);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(107, 227, 245, 0.28);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ice);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* Hairline grid, barely there. Suggests a channel wall without drawing one. */
+.grid-field {
+  background-image:
+    linear-gradient(to right, rgba(30, 39, 64, 0.55) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 39, 64, 0.55) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(70% 55% at 50% 30%, black, transparent);
+}
+
+/* The pulse travelling the channel. Slows through the gate, warms as it passes. */
+.pulse {
+  offset-path: path("M 40 90 L 960 90");
+  offset-rotate: 0deg;
+  animation: flow 6.5s linear infinite;
+}
+.pulse-tail {
+  animation: flow 6.5s linear infinite;
+  animation-delay: -0.16s;
+  offset-path: path("M 40 90 L 960 90");
+  offset-rotate: 0deg;
+}
+
+@keyframes flow {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  6%   { opacity: 1; }
+  30%  { offset-distance: 55%; }
+  66%  { offset-distance: 66%; }
+  94%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+.wire-dash {
+  stroke-dasharray: 3 7;
+  animation: drift 2.4s linear infinite;
+}
+@keyframes drift {
+  to { stroke-dashoffset: -20; }
+}
+
+.rise {
+  animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse, .pulse-tail { animation: none; offset-distance: 40%; opacity: 1; }
+  .wire-dash { animation: none; }
+  .rise { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}
