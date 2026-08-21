@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sluice
+      POSTGRES_PASSWORD: sluice
+      POSTGRES_DB: sluice
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sluice"]
+      interval: 5s
+      retries: 10
+    ports: ["5432:5432"]
+
+  api:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    env_file: .env
+    volumes:
+      - ./backend/geoip:/srv/geoip:ro
+    depends_on:
+      db: { condition: service_healthy }
+    ports: ["8000:8000"]
+
+  uploadbot:
+    build: ./backend
+    command: python -m app.bots.upload_bot
+    env_file: .env
+    depends_on:
+      db: { condition: service_healthy }
+
+  deliverybot:
+    build: ./backend
+    command: python -m app.bots.delivery_bot
+    env_file: .env
+    depends_on:
+      db: { condition: service_healthy }
+
+  janitor:
+    build: ./backend
+    command: python -m app.workers.janitor
+    env_file: .env
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  pgdata:
